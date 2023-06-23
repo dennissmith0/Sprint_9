@@ -12,6 +12,9 @@ adjectives = ['blue', 'large', 'grainy', 'substantial', 'potent', 'thermonuclear
 nouns = ['food', 'house', 'tree', 'bicycle', 'toupee', 'phone']
 
 def random_phrase():
+    '''Write a function that can create a random combination of adjectives 
+    and nouns. When called the function should return a single string containing 
+    a randomly selected adjective and noun pair:'''
     adj = random.choice(adjectives)
     #noun = np.random.choice(nouns)
     #random_index = random.randint(0, len(nouns)-1)
@@ -136,10 +139,53 @@ full_state_names_column = abbr_2_st(addy_states)
 # print(abbr_2_st(full_state_names_column, abbr_2_st=False))
 
 def list_2_series(list_2_series, df):
-    pass
+    new_column = pd.Series(list_2_series)
+    return pd.concat([df, new_column], axis = 1)
+
+#print(list_2_series([10,11,13], test_df))
+
+outlier_df = pd.DataFrame(
+    {'a': [1,2,3,4,5,6],
+     'b': [4,5,6,7,8,9],
+     'c': [7, 1000, 9, 10, 11, 12]})
 
 def rm_outlier(df):
-    pass
+    cleaned_df = pd.DataFrame()
+
+    for (columnName, columnData) in df.items():
+        Q1 = columnData.quantile(0.25)
+        Q3 = columnData.quantile(0.75)
+        IQR = Q3 - Q1
+        lower_bound = Q1 - 1.5*IQR
+        upper_bound = Q3 + 1.5*IQR
+        #print(lower_bound, upper_bound)
+
+        mask = columnData.between(lower_bound, upper_bound, inclusive='both')
+        cleaned = columnData.loc[mask]
+
+        cleaned_df[columnName] = cleaned
+    
+    return cleaned_df
+
+#print(rm_outlier(outlier_df))
 
 def split_dates(date_series):
-    pass
+    #MM/DD/YYYY
+    df = pd.DataFrame()
+
+    month_list = []
+    day_list = []
+    year_list = []
+
+    for date in date_series:
+        month_list.append(date.split('/')[0])
+        day_list.append(date.split('/')[1])
+        year_list.append(date.split('/')[2])
+    
+    df['month'] = month_list
+    df['day'] = day_list
+    df['year'] = year_list
+
+    return df
+
+print(split_dates(pd.Series(['01/13/2016', '02/11/2015', '03/14/2017', '06/23/2023'])))
